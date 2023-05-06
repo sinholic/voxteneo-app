@@ -266,7 +266,7 @@ class SportController extends Controller
         $response = Http::withToken(session()->get('user')['token'])
         ->delete(env('API_URL', null) . "/api/v1/sport-events/{$id}");
         if ($response->getStatusCode() != 204) {
-            return redirect()->route($this->back_from_list)->withDanger($response->json());
+            return redirect()->route($this->back_from_list)->withDanger(json_encode($response->json()));
         }
         return redirect()->route($this->back_from_list)->withSuccess("$this->name has been Deleted Successfully");
     }

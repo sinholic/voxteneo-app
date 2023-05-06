@@ -50,9 +50,11 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => 'required|string|max:255',
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
-            'password' => 'required|string|min:6|confirmed|regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$/',
+            'password' => 'required|string|min:8|regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$/',
+            'confirmed'     => 'required|same:password'
         ]);
     }
 
@@ -69,7 +71,7 @@ class RegisterController extends Controller
             "lastName" => $data['lastName'],
             "email" => $data['email'],
             "password" => $data['password'],
-            "repeatPassword" => $data['repeatPassword'],
+            "repeatPassword" => $data['confirmed'],
         ]);
 
         if ($response->getStatusCode() != 200) {
