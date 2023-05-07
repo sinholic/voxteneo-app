@@ -2,94 +2,83 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class UserTest extends TestCase
+class UserControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
-    /** @test */
-    public function can_create_new_user()
+    public function testIndex()
     {
-        $response = $this->postJson('/api/users', [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'Password123!!',
-        ]);
+        session(['user' => ['id'  => 1801,   "email" => "mp.prasetio@gmail.com",
+        'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvYXBpLXNwb3J0LWV2ZW50cy5waHA2LTAyLnRlc3Qudm94dGVuZW8uY29tXC9hcGlcL3YxXC91c2Vyc1wvbG9naW4iLCJpYXQiOjE2ODM0MTkwMDYsImV4cCI6MTY4MzUwNTQwNiwibmJmIjoxNjgzNDE5MDA2LCJqdGkiOiJ4WXVVRWhTQm1QVG9NS2ptIiwic3ViIjoxODAxLCJwcnYiOiI4N2UwYWYxZWY5ZmQxNTgxMmZkZWM5NzE1M2ExNGUwYjA0NzU0NmFhIn0.odn3uqp2gWxhYzQiOadAfXLtB0riRxXcSCRXvc-L-z0']]);
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('users', [
-            'name' => 'John Doe',
-            'email' => 'john@example.com'
-        ]);
+        $response = $this->get(route('users.index'));
 
-        $this->assertTrue(Hash::check('password123', User::where('email', 'john@example.com')->first()->password));
-    }
-    
-    /** @test */
-    public function can_login_with_valid_credentials()
-    {
-        $user = User::factory()->create([
-            'email' => 'jane@example.com',
-            'password' => Hash::make('password123'),
-        ]);
-    
-        $response = $this->postJson('/api/login', [
-            'email' => 'jane@example.com',
-            'password' => 'password123',
-        ]);
-    
         $response->assertStatus(200);
-        $response->assertJsonFragment(['message' => 'Login successful']);
-        $response->assertJsonFragment(['email' => 'jane@example.com']);
+        $response->assertViewIs('page.content.index');
+        $response->assertViewHas('datas');
+        $response->assertViewHas('contents');
+        $response->assertViewHas('view_options');
     }
-    
-    /** @test */
-    public function cannot_login_with_invalid_credentials()
+
+    public function testCreate()
     {
-        $user = User::factory()->create([
-            'email' => 'jane@example.com',
-            'password' => Hash::make('password123'),
-        ]);
-    
-        $response = $this->postJson('/api/login', [
-            'email' => 'jane@example.com',
-            'password' => 'wrong_password',
-        ]);
-    
-        $response->assertStatus(401);
-        $response->assertJsonFragment(['message' => 'Invalid login credentials']);
-    }
-    
-    /** @test */
-    public function can_get_user_with_valid_token()
-    {
-        $user = User::factory()->create([
-            'email' => 'jane@example.com',
-            'password' => Hash::make('password123'),
-        ]);
-    
-        $token = $user->createToken('test_token')->plainTextToken;
-    
-        $response = $this->withHeaders([
-            'Authorization' => "Bearer $token",
-        ])->get('/api/user');
-    
+        session(['user' => ['id'  => 1801,   "email" => "mp.prasetio@gmail.com",
+        'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvYXBpLXNwb3J0LWV2ZW50cy5waHA2LTAyLnRlc3Qudm94dGVuZW8uY29tXC9hcGlcL3YxXC91c2Vyc1wvbG9naW4iLCJpYXQiOjE2ODM0MTkwMDYsImV4cCI6MTY4MzUwNTQwNiwibmJmIjoxNjgzNDE5MDA2LCJqdGkiOiJ4WXVVRWhTQm1QVG9NS2ptIiwic3ViIjoxODAxLCJwcnYiOiI4N2UwYWYxZWY5ZmQxNTgxMmZkZWM5NzE1M2ExNGUwYjA0NzU0NmFhIn0.odn3uqp2gWxhYzQiOadAfXLtB0riRxXcSCRXvc-L-z0']]);
+
+        $response = $this->get(route('users.create'));
+
         $response->assertStatus(200);
-        $response->assertJsonFragment(['email' => 'jane@example.com']);
+        $response->assertViewIs('page.content.add');
+        $response->assertViewHas('contents');
     }
-    
-    /** @test */
-    public function cannot_get_user_with_invalid_token()
+
+    public function testStore()
     {
-        $response = $this->withHeaders([
-            'Authorization' => "Bearer invalid_token",
-        ])->get('/api/user');
-    
-        $response->assertStatus(401);
+        session(['user' => ['id'  => 1801,   "email" => "mp.prasetio@gmail.com",
+        'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvYXBpLXNwb3J0LWV2ZW50cy5waHA2LTAyLnRlc3Qudm94dGVuZW8uY29tXC9hcGlcL3YxXC91c2Vyc1wvbG9naW4iLCJpYXQiOjE2ODM0MTkwMDYsImV4cCI6MTY4MzUwNTQwNiwibmJmIjoxNjgzNDE5MDA2LCJqdGkiOiJ4WXVVRWhTQm1QVG9NS2ptIiwic3ViIjoxODAxLCJwcnYiOiI4N2UwYWYxZWY5ZmQxNTgxMmZkZWM5NzE1M2ExNGUwYjA0NzU0NmFhIn0.odn3uqp2gWxhYzQiOadAfXLtB0riRxXcSCRXvc-L-z0']]);
+
+        $data = [
+            'firstName' => $this->faker->firstName,
+            'lastName' => $this->faker->lastName,
+            'email' => $this->faker->safeEmail,
+            'password' => 'Password123#',
+            'confirmed' => 'Password123#',
+        ];
+
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200)
+        ]);
+
+        $response = $this->post(route('users.store'), $data);
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertSessionHasNoErrors();
+        $response->assertSessionHas('success', 'User has been Added Successfully');
+    }
+
+    public function testShow()
+    {
+        session(['user' => ['id'  => 1801,   "email" => "mp.prasetio@gmail.com",
+        'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvYXBpLXNwb3J0LWV2ZW50cy5waHA2LTAyLnRlc3Qudm94dGVuZW8uY29tXC9hcGlcL3YxXC91c2Vyc1wvbG9naW4iLCJpYXQiOjE2ODM0MTkwMDYsImV4cCI6MTY4MzUwNTQwNiwibmJmIjoxNjgzNDE5MDA2LCJqdGkiOiJ4WXVVRWhTQm1QVG9NS2ptIiwic3ViIjoxODAxLCJwcnYiOiI4N2UwYWYxZWY5ZmQxNTgxMmZkZWM5NzE1M2ExNGUwYjA0NzU0NmFhIn0.odn3uqp2gWxhYzQiOadAfXLtB0riRxXcSCRXvc-L-z0']]);
+
+        $id = 1801;
+        $firstName = $this->faker->firstName;
+        $lastName = $this->faker->lastName;
+        $email = $this->faker->email;
+        Http::fake([
+            '*' => Http::response(['id'=> $id, 'firstName' => $firstName, 'lastName' => $lastName, 'email' => $email], 200)
+        ]);
+
+        $response = $this->get(route('users.show', $id));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('page.content.edit');
+        $response->assertViewHas('model', ['id'=> $id, 'firstName' => $firstName, 'lastName' => $lastName, 'email' => $email]);
+        $response->assertViewHas('contents');
     }
 }

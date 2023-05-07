@@ -64,11 +64,13 @@ class SportController extends Controller
     public function create()
     {
         $datas = Http::withToken(session()->get('user')['token'])
-        ->get(env('API_URL', null) . "/api/v1/organizers")->json();
+        ->get(env('API_URL', null) . "/api/v1/organizers");
 
         if ($datas->getStatusCode() != 200) {
             return redirect()->route($this->back_from_form)->withDanger(json_encode($datas->json()));
         }
+        
+        $datas = $datas->json();
         // proses array dengan array_map()
         $newData = array_reduce($datas['data'], function($result, $item) {
             $result[$item['id']] = $item['organizerName'];
